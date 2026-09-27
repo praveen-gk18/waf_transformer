@@ -24,10 +24,12 @@ Key design facts:
 - **Everything is auditable**: every decision logs score, action, model
   version, policy version, latency.
 
-Quality/speed numbers (full model, test set): precision 0.73 / recall 0.89 /
-F1 0.80 at 0.5; recall 0.95 at the operating point; unseen attacks 0.90 recall.
-The distilled edge student meets the 10 ms p99 budget where the teacher
-doesn't (`docs/20_distillation.md`).
+Quality/speed numbers (promoted model `run1/best.pt`, test set @0.5):
+precision 0.75 / recall 0.84 / F1 0.79, FPR 0.079; recall 0.95 at the
+operating point; unseen attacks 0.89 recall. An earlier checkpoint missed
+**literal** (unencoded) attacks badly — that blind spot is documented and
+fixed in `data/reports/model_report.md`. The distilled edge student meets the
+10 ms p99 budget where the teacher doesn't (`docs/20_distillation.md`).
 
 ---
 
@@ -223,6 +225,7 @@ scripts/                run_data_pipeline.sh, demo_streaming.sh, run_nightly.sh,
 | tests skip 5 cases | torch isn't installed in that interpreter — run with `.venv/bin/python` |
 | want to change thresholds mid-traffic | edit `config/scope.toml`, done — next request uses them (`/health` shows the live policy) |
 | drifted / novel attacks slipping through | `make monitor-run` (drift), then `make model-retrain` (feed it the watchlist) |
+| attacks with stripped headers score low | known limitation (model_report addendum) — real traffic has full headers; add header-ablated variants via `make model-retrain` |
 
 ---
 

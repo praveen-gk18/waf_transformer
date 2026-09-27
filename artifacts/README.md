@@ -7,11 +7,13 @@ move storage there and re-ignore this directory.
 
 | File | What it is |
 |---|---|
-| `run1/best.pt` | best checkpoint (model weights + tokenizer/model specs + val metrics + operating threshold) |
-| `run1/history.json` | per-epoch training curve (loss, val precision/recall/F1, operating point) |
-| `run1/summary.json` | selected-epoch summary |
-| `model.onnx` | ONNX export (single file, dynamic axes, for ONNX Runtime serving) |
-| `eval/eval.json` | Step-9 evaluation results (test / unseen-technique / adversarial) |
+| `run1/best.pt` | **serving checkpoint** — currently the promoted run2 model (weights + specs + val metrics + operating threshold) |
+| `run1/history.json` | per-epoch training curve of the original Phase-3 run |
+| `run1/summary.json` | selected-epoch summary (original Phase-3 run) |
+| `run2/` | Step-16 retrain artifacts (history, summary, checkpoint copy) — see model_report addendum |
+| `model.onnx` | ONNX export of the serving checkpoint (dynamic axes, ONNX Runtime) |
+| `distill/` | Step-20 distilled student (edge deployment) + its report |
+| `eval/eval.json` | evaluation results of the serving checkpoint (test / unseen / adversarial) |
 
 Note: ORT int8 quantization and torch dynamic int8 were both benchmarked —
 see `data/reports/latency_report.md` for why neither ships as an artifact here

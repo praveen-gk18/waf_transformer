@@ -1,33 +1,33 @@
 {
   "adversarial": {
     "metrics_at_threshold": {
-      "accuracy": 0.9969,
-      "f1": 0.9985,
-      "fn": 14,
+      "accuracy": 0.9864,
+      "f1": 0.9931,
+      "fn": 62,
       "fp": 0,
       "fpr": 0.0,
       "precision": 1.0,
-      "recall": 0.9969,
+      "recall": 0.9864,
       "threshold": 0.5,
       "tn": 0,
-      "tp": 4529
+      "tp": 4481
     },
     "name": "Adversarial variants (test attacks + 1 extra encoding layer)",
     "operating_point": {
-      "accuracy": 0.95,
-      "f1": 0.9744,
-      "fn": 227,
+      "accuracy": 0.9507,
+      "f1": 0.9747,
+      "fn": 224,
       "fp": 0,
       "fpr": 0.0,
       "precision": 1.0,
-      "recall": 0.95,
-      "threshold": 0.9959025681018829,
+      "recall": 0.9507,
+      "threshold": 0.9950919449329376,
       "tn": 0,
-      "tp": 4316
+      "tp": 4319
     },
     "recall_by_category": {
       "sql_injection": {
-        "recall": 0.9866,
+        "recall": 0.9488,
         "support": 821
       },
       "untyped": {
@@ -35,7 +35,7 @@
         "support": 3153
       },
       "xss": {
-        "recall": 0.9947,
+        "recall": 0.9649,
         "support": 569
       }
     },
@@ -43,41 +43,41 @@
   },
   "test": {
     "metrics_at_threshold": {
-      "accuracy": 0.9039,
-      "f1": 0.8005,
-      "fn": 485,
-      "fp": 1538,
-      "fpr": 0.0932,
-      "precision": 0.7252,
-      "recall": 0.8932,
+      "accuracy": 0.9033,
+      "f1": 0.7891,
+      "fn": 736,
+      "fp": 1299,
+      "fpr": 0.0787,
+      "precision": 0.7456,
+      "recall": 0.838,
       "threshold": 0.5,
-      "tn": 14963,
-      "tp": 4058
+      "tn": 15202,
+      "tp": 3807
     },
     "name": "Main test split (unseen records, seen techniques)",
     "operating_point": {
-      "accuracy": 0.8275,
-      "f1": 0.704,
+      "accuracy": 0.713,
+      "f1": 0.5883,
       "fn": 227,
-      "fp": 3403,
-      "fpr": 0.2062,
-      "precision": 0.5591,
+      "fp": 5813,
+      "fpr": 0.3523,
+      "precision": 0.4261,
       "recall": 0.95,
-      "threshold": 0.13491088896989822,
-      "tn": 13098,
+      "threshold": 0.07418737187981606,
+      "tn": 10688,
       "tp": 4316
     },
     "recall_by_category": {
       "sql_injection": {
-        "recall": 0.7881,
+        "recall": 0.7978,
         "support": 821
       },
       "untyped": {
-        "recall": 0.9248,
+        "recall": 0.8484,
         "support": 3153
       },
       "xss": {
-        "recall": 0.8699,
+        "recall": 0.8383,
         "support": 569
       }
     },
@@ -85,37 +85,37 @@
   },
   "test_unseen": {
     "metrics_at_threshold": {
-      "accuracy": 0.8947,
-      "f1": 0.9444,
-      "fn": 260,
+      "accuracy": 0.8886,
+      "f1": 0.941,
+      "fn": 275,
       "fp": 0,
       "fpr": 0.0,
       "precision": 1.0,
-      "recall": 0.8947,
+      "recall": 0.8886,
       "threshold": 0.5,
       "tn": 0,
-      "tp": 2209
+      "tp": 2194
     },
     "name": "Unseen-technique holdout (time_based_sql, dom_xss \u2014 never trained on)",
     "operating_point": {
-      "accuracy": 0.9502,
-      "f1": 0.9745,
-      "fn": 123,
+      "accuracy": 0.953,
+      "f1": 0.9759,
+      "fn": 116,
       "fp": 0,
       "fpr": 0.0,
       "precision": 1.0,
-      "recall": 0.9502,
-      "threshold": 0.10161431133747101,
+      "recall": 0.953,
+      "threshold": 0.114381093531847,
       "tn": 0,
-      "tp": 2346
+      "tp": 2353
     },
     "recall_by_category": {
       "sql_injection": {
-        "recall": 0.958,
+        "recall": 0.9599,
         "support": 1644
       },
       "xss": {
-        "recall": 0.7685,
+        "recall": 0.7467,
         "support": 825
       }
     },

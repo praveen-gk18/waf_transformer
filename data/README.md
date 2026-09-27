@@ -6,8 +6,11 @@
 | `interim/` | ❌ | `unified.jsonl` (parsed), `labeled.jsonl` (post-adjudication) |
 | `processed/` | ❌ | `train|val|test|test_unseen.jsonl.gz`, `splits_index.json`, `stats.json` — the Phase-2 training dataset |
 | `review/` | ❌ | `review_queue.csv` (analyst workflow), `corrections.jsonl` |
-| `reports/` | ✅ | `dataset_report.md`, `stats.json`, `fetch_manifest.json` — the auditable build record |
+| `reports/` | ✅ | dataset/model/latency/monitor reports + manifests — the auditable build record |
 | `samples/` | ✅ | `preview.jsonl` — tiny stratified schema preview |
+| `batch/` | ✅ | nightly reports (`report-*.md`, `summary-*.json`) + `candidates.jsonl` — tiny by design |
+| `decisions/` | ❌ | audit log of every enforcement decision (live traffic; same convention as production logs) |
+| `stream/` | ❌ | file-backed broker topics + consumer-group offsets (runtime state) |
 
 ## Why not commit the datasets?
 

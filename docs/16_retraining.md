@@ -46,3 +46,11 @@ in every decision (`sha256:<12>`) makes the cutover auditable.
 Retraining is deliberately cheap at this size (3.4M params, CPU-minutes); the
 expensive part is the analyst loop — which is why candidates arrive typed and
 pre-scored.
+
+## Known data-iteration queue
+
+- **Header-ablated attacks** (model_report addendum): attacks with stripped
+  headers score lower (0.49 vs 0.99). Add a placement/variant that drops or
+  minimizes headers on a fraction of synthetic attacks, rebuild, retrain.
+- Monitor `shadow would-challenge` for header-stripped probes in real traffic
+  before deciding the priority.
