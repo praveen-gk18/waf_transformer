@@ -1,0 +1,77 @@
+# Local data-collection stack for waf_transformer (Steps 2–3).
+# Not needed to build datasets (that is pure Python) — this stands up the
+# production-shaped log path: OpenResty emits full-request JSON logs, Filebeat
+# ships them to Kafka, MinIO archives raw, Postgres will hold labels/decisions.
+#
+#   docker compose up -d
+#
+services:
+  # --- message broker (KRaft single node; scale to a cluster in prod) ---
+  kafka:
+    image: bitnami/kafka:3.7
+    environment:
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_CFG_LOG_RETENTION_HOURS=168        # 7 days replay window
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/bitnami/kafka
+
+  # --- raw log storage (S3-compatible; prod: S3) ---
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=wafminio
+      - MINIO_ROOT_PASSWORD=wafminio-secret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  # --- labels, review workflow, decision audit log ---
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=waf
+      - POSTGRES_USER=waf
+      - POSTGRES_PASSWORD=waf-local-only
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  # --- log source: OpenResty (nginx + lua for body capture) ---
+  openresty:
+    image: openresty/openresty:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
+      - ./nginx/waf_request_logging.conf:/usr/local/openresty/nginx/conf/includes/waf_request_logging.conf:ro
+      - nginx_logs:/var/log/nginx
+
+  # --- log shipper: JSON logs -> Kafka ---
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.13.4
+    user: root
+    command: ["filebeat", "-e", "-c", "/usr/share/filebeat/filebeat.yml"]
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - nginx_logs:/var/log/nginx:ro
+    depends_on:
+      - kafka
+      - openresty
+
+volumes:
+  kafka_data:
+  minio_data:
+  pg_data:
+  nginx_logs:

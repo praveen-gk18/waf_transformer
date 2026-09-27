@@ -1,0 +1,38 @@
+{
+  "csic_2010": {
+    "canonical_url": "https://gitlab.fing.edu.uy/gsi/web-application-attacks-datasets/-/raw/master/csic_2010/dataset_cisc_train_test.tar.gz",
+    "dataset": "csic_2010",
+    "description": "HTTP DATASET CSIC 2010 \u2014 72k benign + 25k anomalous requests against an e-commerce app (Paros/w3af-generated attacks).",
+    "files": {
+      "cisc_anomalousTraffic_test.txt": {
+        "bytes": 16990871,
+        "sha256": "ed99cdd202819482bbebe6bb52e2f332615e8cf3cd97f699e4b27a75cf298e81"
+      },
+      "cisc_normalTraffic_test.txt": {
+        "bytes": 21960992,
+        "sha256": "14e7a5f603ffa19065a0f0cd1efad1dc44f4f9224b4095530fa131cc457fbcde"
+      },
+      "cisc_normalTraffic_train.txt": {
+        "bytes": 21958776,
+        "sha256": "0b89114ffe3a795bce8bd96e5b4374b4aeeeb0fd1b7506ded614e4bc5a592af6"
+      }
+    },
+    "strategy": "git_clone"
+  },
+  "ecml_pkdd_2007": {
+    "canonical_url": "https://gitlab.fing.edu.uy/gsi/web-application-attacks-datasets/-/raw/master/ecml_pkdd/dataset_ecml_pkdd_train_test.tar.gz",
+    "dataset": "ecml_pkdd_2007",
+    "description": "ECML/PKDD 2007 Discovery Challenge traffic \u2014 35k benign + 15k attacks across 7 families (SqlInjection, XSS, LdapInjection, ...).",
+    "files": {
+      "xml_test.txt": {
+        "bytes": 42041312,
+        "sha256": "f1b79ffbe51b271a55545fb4caf1f4edd97e3514a835ade64f875245a9bb4116"
+      },
+      "xml_train.txt": {
+        "bytes": 40658137,
+        "sha256": "b4e85e85a315eb522f5175e11ed0d35d0e0aab5cd41c4618102b624772692a86"
+      }
+    },
+    "strategy": "git_clone"
+  }
+}

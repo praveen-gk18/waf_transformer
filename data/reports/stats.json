@@ -1,0 +1,130 @@
+{
+  "config": {
+    "body_max_bytes": 8192,
+    "fractions": {
+      "test": 0.15,
+      "train": 0.7,
+      "val": 0.15
+    },
+    "holdout_techniques": [
+      "time_based_sql",
+      "dom_xss"
+    ],
+    "min_attack_ratio": 0.05,
+    "seed": 20260927,
+    "target_attack_ratio": 0.08
+  },
+  "excluded_by_holdout_contamination": 685,
+  "excluded_out_of_scope": 11735,
+  "files_written": {
+    "test": 21044,
+    "test_unseen": 2469,
+    "train": 98204,
+    "val": 21044
+  },
+  "leakage_audit": "passed",
+  "overall": {
+    "bodies_truncated": 0,
+    "by_category": {
+      "none": 110006,
+      "sql_injection": 5398,
+      "untyped": 20909,
+      "xss": 3979
+    },
+    "by_class": {
+      "attack": 30286,
+      "benign": 110006
+    },
+    "by_source": {
+      "csic_2010": 95237,
+      "ecml_pkdd_2007": 38135,
+      "synthetic:attack_simulator": 3920,
+      "synthetic:normal_profile": 3000
+    },
+    "groups": 104404,
+    "records": 140292
+  },
+  "splits": {
+    "test": {
+      "bodies_truncated": 0,
+      "by_category": {
+        "none": 16501,
+        "sql_injection": 821,
+        "untyped": 3153,
+        "xss": 569
+      },
+      "by_class": {
+        "attack": 4543,
+        "benign": 16501
+      },
+      "by_source": {
+        "csic_2010": 14271,
+        "ecml_pkdd_2007": 5620,
+        "synthetic:attack_simulator": 676,
+        "synthetic:normal_profile": 477
+      },
+      "groups": 15654,
+      "records": 21044
+    },
+    "train": {
+      "bodies_truncated": 0,
+      "by_category": {
+        "none": 77004,
+        "sql_injection": 3644,
+        "untyped": 14635,
+        "xss": 2921
+      },
+      "by_class": {
+        "attack": 21200,
+        "benign": 77004
+      },
+      "by_source": {
+        "csic_2010": 66690,
+        "ecml_pkdd_2007": 26959,
+        "synthetic:attack_simulator": 2568,
+        "synthetic:normal_profile": 1987
+      },
+      "groups": 73097,
+      "records": 98204
+    },
+    "val": {
+      "bodies_truncated": 0,
+      "by_category": {
+        "none": 16501,
+        "sql_injection": 933,
+        "untyped": 3121,
+        "xss": 489
+      },
+      "by_class": {
+        "attack": 4543,
+        "benign": 16501
+      },
+      "by_source": {
+        "csic_2010": 14276,
+        "ecml_pkdd_2007": 5556,
+        "synthetic:attack_simulator": 676,
+        "synthetic:normal_profile": 536
+      },
+      "groups": 15653,
+      "records": 21044
+    }
+  },
+  "test_unseen": {
+    "bodies_truncated": 0,
+    "by_category": {
+      "sql_injection": 1644,
+      "xss": 825
+    },
+    "by_class": {
+      "attack": 2469
+    },
+    "by_source": {
+      "csic_2010": 1104,
+      "ecml_pkdd_2007": 285,
+      "synthetic:attack_simulator": 1080
+    },
+    "groups": 1306,
+    "records": 2469
+  },
+  "train_attack_ratio": 0.2159
+}

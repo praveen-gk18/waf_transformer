@@ -1,0 +1,32 @@
+# Filebeat: ship full-request JSON logs to Kafka (Step 3).
+# At-least-once delivery; the consumer (Phase 4) must be idempotent on
+# request_id. Unparseable lines go to a dead-letter file for triage.
+
+filebeat.inputs:
+  - type: filestream
+    id: nginx-waf-access
+    paths:
+      - /var/log/nginx/waf_access.json
+    parsers:
+      - ndjson:
+          target: ""
+          overwrite_keys: true
+          add_error_key: true
+    fields:
+      topic_kind: http.requests.raw
+    fields_under_root: false
+
+# Dead-letter malformed lines instead of blocking the pipeline.
+filebeat.registry.file.path: /var/lib/filebeat/registry
+
+output.kafka:
+  hosts: ["kafka:9092"]
+  topic: "http.requests.raw"
+  partition.hash:
+    hash: ["request_id"]     # keep a request's retries on one partition
+  required_acks: 1
+  compression: gzip
+  max_message_bytes: 1000000
+
+logging.level: info
+logging.to_files: false

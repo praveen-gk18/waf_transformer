@@ -1,0 +1,10 @@
+# Phase 3 model dependencies. The DATA pipeline (waf_transformer.data) is
+# stdlib-only — install these only for training/eval/serving (waf_transformer.modeling).
+#
+# CPU-only machines can use the smaller wheels:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+torch>=2.2
+torchao>=0.10          # dynamic int8 (torch.ao.quantization shim is broken in torch 2.14)
+onnxruntime>=1.17
+onnx>=1.15
+onnxscript>=0.7        # required by torch>=2.6 ONNX exporter

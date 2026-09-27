@@ -1,0 +1,226 @@
+# =============================================================================
+# waf_transformer — Phase 1 scope & budget contract
+# =============================================================================
+# This file is the single source of truth for WHAT we detect, what "normal"
+# looks like, the latency budget, and dataset construction rules. The data
+# pipeline (waf_transformer.data.*) reads it; later phases (tokenizer, model,
+# serving, enforcement thresholds) will read it too. Edit here, not in code.
+# =============================================================================
+
+[project]
+name = "waf_transformer"
+tagline = "Transformer-based request classifier for a web application firewall"
+# Owner of detection scope decisions (for the review workflow).
+scope_owner = "security-eng"
+python_min = "3.11"
+
+# -----------------------------------------------------------------------------
+# STEP 1 — Scope: which attacks, what normal looks like, latency budget
+# -----------------------------------------------------------------------------
+[scope.detection]
+# v1 objective: binary classification of a full HTTP request.
+#   output: p(malicious) in [0, 1]
+objective = "binary"
+# Attack families we commit to detect FIRST. Everything else is labelled and
+# retained as metadata but treated as out-of-scope for v1 acceptance criteria.
+in_scope_categories = ["sql_injection", "xss"]
+# Reserved for later iterations. Kept in the taxonomy so the labeler can type
+# them today and the model can grow into them without a data migration.
+out_of_scope_categories = [
+    "path_traversal",
+    "command_injection",
+    "ldap_injection",
+    "xpath_injection",
+    "ssi",
+    "xxe",
+    "ssrf",
+    "open_redirect",
+]
+# Enforce only behind TLS termination: the engine sees plaintext requests.
+sits_behind = "tls_termination"
+# Non-HTTP channels are explicitly out of scope for v1 (see docs/01_scope.md).
+excluded_channels = ["websocket", "grpc_streaming", "http3_datagrams"]
+
+[scope.normal_profile]
+# What "normal" looks like for OUR target application. This profile drives the
+# synthetic normal-traffic generator and defines the reference distribution for
+# false-positive review. It is NOT a generic web profile.
+app_types = ["e-commerce_storefront", "rest_json_api_backend"]
+methods = { GET = 0.70, POST = 0.22, PUT = 0.02, DELETE = 0.02, HEAD = 0.02, OPTIONS = 0.02 }
+content_types = [
+    "application/x-www-form-urlencoded",
+    "application/json",
+    "multipart/form-data",
+]
+auth = "cookie_session"          # storefront sessions (JSESSIONID-like)
+api_auth = "bearer_token"        # JSON API clients
+typical_paths = [
+    "/", "/catalog/*", "/product/*", "/search", "/cart/*",
+    "/checkout/*", "/account/*", "/api/v1/*", "/static/*",
+]
+benign_params = [
+    "id", "idA", "idP", "page", "sort", "q", "category", "color", "size",
+    "qty", "coupon", "redirect_to", "next", "lang", "callback",
+]
+# Requests that look scary but MUST be allowed. The review workflow watches
+# these as false-positive tripwires (see docs/05_labeling.md).
+weird_but_benign = [
+    "product names with apostrophes (O'Reilly)",
+    "reviews containing SQL words (select, join, drop) in prose",
+    "search queries with *, %, + characters",
+    "long-but-valid URLs and unicode product names",
+    "empty parameter values and repeated parameters",
+]
+traffic_shape = "diurnal_bursty"
+
+[latency_budget]
+# Milliseconds per request, end-to-end inside the detection engine
+# (receive -> tokenize -> infer -> decide -> emit). p99 hard cap is the
+# number that would degrade user experience; everything else is headroom.
+unit = "ms"
+p50 = 5.0
+p95 = 8.0
+p99 = 10.0
+hard_cap = 10.0
+# Budget breakdown used to size the model in Phase 3.
+[latency_budget.breakdown]
+tokenize = 1.5
+inference = 5.0
+decision_and_io = 1.0
+headroom = 2.5
+
+# -----------------------------------------------------------------------------
+# STEP 5 — Dataset construction rules
+# -----------------------------------------------------------------------------
+[dataset]
+# Group-aware 70/15/15 split. Groups (same session / same attack source /
+# same generator family) never straddle splits — no cross-split leakage.
+train_fraction = 0.70
+val_fraction = 0.15
+test_fraction = 0.15
+seed = 20260927
+
+# Class-balance policy for the TRAIN split. "at least 5-10% attacks" is a
+# FLOOR, not a target: public attack corpora sit far above it and are kept in
+# full; real traffic (0.1% attacks) is oversampled UP to `target_attack_ratio`.
+min_attack_ratio = 0.05
+target_attack_ratio = 0.08
+max_attack_ratio = 0.90      # sanity ceiling only; below this is not "lazy"
+oversample = "attacks_if_scarce"    # oversample only when under the floor
+val_test_ratio = "natural"          # never rebalance evaluation splits
+
+# Techniques held out of train/val/test entirely and served as
+# data/processed/test_unseen.jsonl — the Phase-3 "attacks the model has
+# never seen" evaluation set (Step 9).
+holdout_techniques = ["time_based_sql", "dom_xss"]
+
+# Group-key priority for leak-free splitting (first match wins).
+group_key_priority = ["session_cookie", "client_ip", "generator_family", "record_id"]
+session_cookie_names = ["JSESSIONID", "PHPSESSID", "sid", "session", "connect.sid"]
+
+# Step 17 edge cases — decided now so parsers and model agree:
+body_max_bytes = 8192        # larger bodies truncated (file uploads, etc.)
+body_overflow = "truncate"   # keep prefix + flag; never crash on huge bodies
+header_max_count = 64
+header_value_max_bytes = 2048
+
+[dataset.ratios_note]
+# Real production traffic is ~0.1% attacks. When live logs replace public
+# corpora, the builder oversamples attacks up to target_attack_ratio (0.08).
+# With public corpora (CSIC ~26% attack, ECML ~30% attack) the floor is
+# already satisfied and no resampling is applied.
+
+# -----------------------------------------------------------------------------
+# Label taxonomy — dataset class strings map to these categories in code
+# (waf_transformer/data/schema.py). Keep names stable: they are dataset IDs.
+# -----------------------------------------------------------------------------
+[taxonomy]
+benign = ["benign"]
+in_scope_attack = ["sql_injection", "xss"]
+out_of_scope_attack = [
+    "path_traversal", "command_injection", "ldap_injection",
+    "xpath_injection", "ssi", "xxe", "ssrf", "open_redirect",
+]
+untyped_attack = ["untyped"]     # e.g. CSIC "Attack" rows with no family label
+
+[taxonomy.techniques]
+sql_injection = ["union_sql", "boolean_blind_sql", "error_based_sql", "time_based_sql", "stacked_sql", "unknown"]
+xss = ["reflected_xss", "stored_xss", "dom_xss", "unknown"]
+
+[labeling]
+# Label-source priority, highest wins (docs/05_labeling.md):
+#   manual > waf_export > dataset > heuristic > unknown(-> review queue)
+priority = ["manual", "waf_export", "dataset", "synthetic", "heuristic", "unknown"]
+# Heuristic typing confidence (used for category enrichment and for labeling
+# fully-unlabelled logs; never overrides a dataset/manual class label).
+heuristic_confidence_strong = 0.9
+heuristic_confidence_weak = 0.6
+# Manual review sampling (Step 5): stratified by source x label.
+review_sample_per_stratum = 40
+review_seed = 20260927
+
+# -----------------------------------------------------------------------------
+# Enforcement thresholds (Phase 4, Step 12). Defined here so the decision
+# engine reads the SAME file; nothing consumes them until Phase 4.
+# -----------------------------------------------------------------------------
+[enforcement]
+block_above = 0.90
+challenge_above = 0.60
+allow_below = 0.60
+mode = "shadow"                # shadow | challenge | block — Phase 5 rollout
+
+# =============================================================================
+# PHASE 3 — Build the Brain (Steps 6–9). Consumed by waf_transformer.modeling.
+# =============================================================================
+
+[tokenizer]
+# Step 6 decision (docs/06_tokenizer.md): byte-level tokens with HTTP field
+# separators. Chars/BPE were the plan's two options; bytes give char-level
+# obfuscation robustness (S%45LECT, %u0027, unicode) with zero OOV, at the
+# cost of ~2x sequence length vs BPE — acceptable at this model size.
+kind = "byte_level"
+special_tokens = ["[PAD]", "[CLS]", "[SEP]", "[TRUNC]", "[METH]", "[PATH]", "[QUERY]", "[HDR]", "[BODY]", "[UNK]"]
+vocab_size = 266          # 10 specials + 256 byte values
+max_len = 384             # covers p100 of real corpora (365) with headroom
+# Per-field budgets (bytes). Body gets less than query — file uploads truncate
+# (Step 17 policy), attacks-in-body still get 72 bytes of context.
+[tokenizer.field_budgets]
+method = 8
+path = 88
+query = 128
+headers = 72
+body = 72
+
+[model]
+# Step 7 (docs/07_model.md): small encoder-only transformer, binary head.
+# ~3.4M params — the plan's "4-6 layers, 256-512 dims, 8 heads" sweet spot.
+architecture = "encoder_only_transformer"
+d_model = 256
+nhead = 8
+num_layers = 4
+dim_feedforward = 1024
+dropout = 0.1
+pooling = "cls"
+
+[training]
+# Step 8 (docs/08_training.md).
+loss = "bce"                 # bce (class-weighted) | focal
+focal_gamma = 2.0
+focal_alpha = 0.25
+pos_weight = "auto"          # n_benign / n_attack from the train split
+epochs = 3
+batch_size = 32
+learning_rate = 5.0e-4
+weight_decay = 0.01
+warmup_fraction = 0.06
+early_stop_patience = 2
+seed = 20260927
+# CPU-sandbox demonstration run (docs/08_training.md); 0 = use all 98k train
+# records (the production setting, run on GPU).
+max_train_records = 12000
+
+[evaluation]
+# Step 9 (docs/09_evaluation.md).
+probability_threshold = 0.5           # reporting threshold
+operating_recall_target = 0.95        # select operating point for high recall
+adversarial_extra_encoding_layers = 1 # re-encode test attacks for robustness eval

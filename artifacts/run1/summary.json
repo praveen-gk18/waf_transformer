@@ -1,0 +1,29 @@
+{
+  "f1": 0.7923,
+  "epoch": 3,
+  "operating_threshold": 0.1376609280705452,
+  "val_metrics": {
+    "threshold": 0.5,
+    "precision": 0.7118,
+    "recall": 0.8934,
+    "f1": 0.7923,
+    "accuracy": 0.899,
+    "fpr": 0.0995,
+    "tp": 578,
+    "fp": 234,
+    "tn": 2118,
+    "fn": 69
+  },
+  "val_operating_point": {
+    "threshold": 0.1376609280705452,
+    "precision": 0.5586,
+    "recall": 0.9505,
+    "f1": 0.7037,
+    "accuracy": 0.8273,
+    "fpr": 0.2066,
+    "tp": 615,
+    "fp": 486,
+    "tn": 1866,
+    "fn": 32
+  }
+}
