@@ -63,8 +63,9 @@ class FakeDetector:
         return Decision(
             request_id=rec.id, score=score, action=action, shadow_action=shadow,
             policy_mode="shadow", policy_version="fake", block_above=0.9,
-            challenge_above=0.6, model_version="sha256:fake", latency_ms=1.5,
-            ts="2026-09-27T00:00:00.000+00:00", method=rec.method, path=rec.path,
+            challenge_above=0.6, enforce_percent=100.0, model_version="sha256:fake",
+            latency_ms=1.5, ts="2026-09-27T00:00:00.000+00:00",
+            method=rec.method, path=rec.path,
             request={"method": rec.method, "path": rec.path, "query_string": rec.query_string,
                      "headers": [[k, v] for k, v in rec.headers], "body": rec.body}
             if shadow or action != "allow" else None,

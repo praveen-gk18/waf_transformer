@@ -73,3 +73,13 @@ gateway-serve:
 
 batch-run:
 	$(PY) -m waf_transformer.pipeline.batch
+
+# ---- Phase 5/6: rollout, monitoring, retraining, distillation (Steps 13–20) ----
+monitor-run:
+	$(PY) -m waf_transformer.pipeline.monitor
+
+model-retrain:
+	sh scripts/run_retrain.sh
+
+model-distill:
+	$(PY_MODEL) -m waf_transformer.modeling.distill --out artifacts/distill

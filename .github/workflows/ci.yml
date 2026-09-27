@@ -1,0 +1,40 @@
+# Step 18 — MLOps CI: every push runs the dependency-light test suite + a
+# synthetic end-to-end smoke. Model training is intentionally NOT in CI
+# (hours on CPU); promotion is manual via scripts/run_retrain.sh + evaluate.
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Unit tests (stdlib; torch tests auto-skip)
+        run: python -m unittest discover -s tests -t . -v
+      - name: Offline data pipeline smoke
+        run: bash scripts/run_data_pipeline.sh demo
+      - name: Pipeline unit smoke (batch/monitor on synthetic decisions)
+        run: |
+          python - <<'EOF'
+          from pathlib import Path
+          import json, tempfile
+          from waf_transformer.pipeline.broker import FileBroker
+          from waf_transformer.pipeline.consumer import StreamConsumer
+          from tests.test_pipeline import FakeDetector, sample_request
+          with tempfile.TemporaryDirectory() as tmp:
+              br = FileBroker(Path(tmp) / "stream")
+              for i in range(6):
+                  br.publish("http.requests.raw", sample_request(i, attack=(i % 2 == 0)))
+              StreamConsumer(br, FakeDetector(), decisions_dir=Path(tmp) / "decisions", group="ci").run_once()
+          print("pipeline smoke ok")
+          EOF

@@ -8,3 +8,5 @@ DAY=${1:-$(date +%F)}
 
 echo "nightly batch for ${DAY}"
 $PY -m waf_transformer.pipeline.batch --day "$DAY"
+echo "monitoring dashboard + drift"
+$PY -m waf_transformer.pipeline.monitor --day "$DAY"

@@ -18,10 +18,13 @@ Built in phases, per the construction plan:
 | 8 | Train the model | Model | ✅ weighted BCE, precision/recall-first ([`docs/08_training.md`](docs/08_training.md)) |
 | 9 | Evaluate and harden | Model | ✅ unseen + adversarial + latency bench ([`docs/09_evaluation.md`](docs/09_evaluation.md)) |
 | 10–12 | Streaming/batch plumbing + enforcement | Plumbing | ✅ Steps 10–12 ([`docs/10_streaming.md`](docs/10_streaming.md), [`docs/11_batch.md`](docs/11_batch.md), [`docs/12_enforcement.md`](docs/12_enforcement.md)) |
-| 13–15 | Shadow mode → blocking → monitoring | Go Live | ⬜ Phase 5 (shadow mode built in) |
-| 16–17 | Retraining loop, edge cases | Ongoing | ⬜ Phase 6 (edge-case policy already in scope) |
+| 13–15 | Shadow mode → blocking → monitoring | Go Live | ✅ Steps 13–15 ([`docs/13_shadow_rollout.md`](docs/13_shadow_rollout.md), [`docs/14_blocking_rollout.md`](docs/14_blocking_rollout.md), [`docs/15_monitoring.md`](docs/15_monitoring.md)) |
+| 16–17 | Retraining loop, edge cases | Ongoing | ✅ Steps 16–17 ([`docs/16_retraining.md`](docs/16_retraining.md), [`docs/17_edge_cases.md`](docs/17_edge_cases.md)) |
+| 18–20 | MLOps CI/CD, drift, distillation | Scale | ✅ Steps 18–20 ([`docs/18_mlops.md`](docs/18_mlops.md), [`docs/20_distillation.md`](docs/20_distillation.md)) |
 
-## Current state (Phases 1–4 complete)
+**👉 New here? Read [`docs/GUIDE.md`](docs/GUIDE.md) — the complete usage guide.**
+
+## Current state (all plan steps implemented)
 
 - **Scope contract** — SQLi + XSS first, binary objective, e-commerce + JSON
   API "normal" profile with weird-but-benign tripwires, p99 ≤ 10 ms budget.
@@ -80,6 +83,28 @@ Latest build: **155,181 labeled records → 140,292 in splits (21.6% attack) +
 - Try it: `make stream-demo` (end-to-end), `make gateway-serve` (decision API
   + demo page), `make batch-run`.
 
+## Phase 5–6 — go live & operate (complete)
+
+- **Shadow → staged blocking** (Steps 13–14): `mode = "shadow"` is the
+  default; promote through `challenge` → `block` with `enforce_percent`
+  deterministic traffic sampling (sticky per client key) — every rung is one
+  hot-reloaded config edit.
+- **Monitoring + drift** (Steps 15/19): `make monitor-run` aggregates the
+  audit log into dashboard + PSI drift + plain-English alerts (volume,
+  false-positive watchlist growth, latency vs budget). Live view at
+  `GET /dashboard`.
+- **Retraining loop** (Step 16): `make model-retrain` harvests the batch job's
+  candidates into an analyst queue → corrections → leak-free rebuild →
+  `artifacts/run2` + evaluation gate.
+- **Edge cases** (Step 17): multipart uploads, GraphQL bodies, binary bodies,
+  oversized echoes — defined behavior + tests (`docs/17_edge_cases.md`).
+- **MLOps CI** (Step 18): GitHub Actions runs the suite + offline smokes per
+  push; model promotion stays human-gated.
+- **Distillation** (Step 20): `make model-distill` produces a ~0.4M-param
+  student in the same checkpoint format — **p99 3.8 ms (jit) / 6.7 ms
+  (eager)** vs the teacher's ~21–23 ms: this is how the 10 ms budget is met
+  on modest CPUs.
+
 ## Quickstart
 
 Data pipeline: Python ≥ 3.11, stdlib only. Model pipeline: `pip install -r
@@ -87,7 +112,7 @@ requirements-model.txt` (or `python3 -m venv .venv` first — the Makefile
 auto-detects `.venv`).
 
 ```bash
-make test            # 84 unit tests
+make test            # 96 unit tests
 make data-pipeline   # Phase 2: fetch public corpora -> build dataset
 make data-demo       # offline smoke run (synthetic sources only)
 make model-train     # Phase 3: train the encoder (config/scope.toml [training])
@@ -98,6 +123,9 @@ make model-demo      # score one request with block/challenge/allow decision
 make stream-demo     # Phase 4: publish -> detect -> decide -> nightly batch
 make gateway-serve   # Phase 4: enforcement bridge (live decision API + demo page)
 make batch-run       # Phase 4: nightly analysis + new training data
+make monitor-run     # Phase 5: dashboard + drift + alerts
+make model-retrain   # Phase 6: analyst review -> rebuild -> retrain -> evaluate
+make model-distill   # Phase 6: small student model (meets the latency budget)
 ```
 
 Individual stages (`make data-fetch`, `data-synth`, `data-ingest`,
@@ -132,11 +160,11 @@ grow with live traffic — same convention as the S3/MinIO store for raw logs).
 `data/reports/` and `data/samples/` are versioned so reviewers can verify
 what was built without downloading anything. See [`data/README.md`](data/README.md).
 
-## Next up — Phase 5 (Go Live)
+## Next up — operate it
 
-Shadow mode is already the default (`[enforcement] mode = "shadow"`): run the
-gateway against live traffic, watch `shadow_actions` in the nightly reports
-for false positives, then flip `mode` to `challenge`/`block` in the config
-file — no redeploy, no restart. Phase 5 then adds blocking rollouts and the
-monitoring dashboard (Step 15); Phase 6 owns the retraining loop fed by the
-batch job's `candidates.jsonl`.
+Everything in the plan is implemented. The operating story is in
+[`docs/GUIDE.md`](docs/GUIDE.md): run shadow for a week, ramp
+`enforce_percent`, watch the nightly dashboard, retrain from the candidates
+the batch job harvests. Not built (documented as future work in
+`docs/18_mlops.md`): model registry, automatic rollback, scheduled CI
+training.

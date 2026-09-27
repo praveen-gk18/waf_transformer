@@ -37,6 +37,7 @@ class Decision:
     policy_version: str
     block_above: float
     challenge_above: float
+    enforce_percent: float
     model_version: str
     latency_ms: float
     ts: str
@@ -56,6 +57,7 @@ class Decision:
                 "version": self.policy_version,
                 "block_above": self.block_above,
                 "challenge_above": self.challenge_above,
+                "enforce_percent": self.enforce_percent,
             },
             "model_version": self.model_version,
             "latency_ms": round(self.latency_ms, 3),
@@ -119,7 +121,8 @@ class Detector:
         t0 = time.perf_counter()
         self.policy.reload_if_changed()
         score = self.score(rec)
-        action, shadow_action = self.policy.decide(score)
+        # sticky rollout sampling (Step 14): gateways can set meta.client_key
+        action, shadow_action = self.policy.decide(score, key=rec.meta.get("client_key") or rec.id)
         latency = (time.perf_counter() - t0) * 1000.0
         st = self.policy.state
         import datetime as dt
@@ -134,6 +137,7 @@ class Detector:
             policy_version=st.version,
             block_above=st.block_above,
             challenge_above=st.challenge_above,
+            enforce_percent=st.enforce_percent,
             model_version=self.model_version,
             latency_ms=latency,
             ts=dt.datetime.now(dt.timezone.utc).isoformat(timespec="milliseconds"),
@@ -144,7 +148,9 @@ class Detector:
                 "path": rec.path,
                 "query_string": rec.query_string,
                 "headers": [[k, v] for k, v in rec.headers],
-                "body": rec.body,
+                # Step 17: oversized bodies (uploads) are capped in the echo —
+                # the score already saw the real (truncated-at-tokenizer) input
+                "body": rec.body if len(rec.body) <= 8192 else rec.body[:8192] + "…[echo truncated]",
             }
             if flagged
             else None,

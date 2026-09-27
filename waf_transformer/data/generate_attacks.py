@@ -165,6 +165,21 @@ PRODUCT_PATHS = [
 ]
 
 
+def _place(payload: str, rng: random.Random) -> str:
+    """Place a payload into a URL/form slot.
+
+    Half the time the payload goes in **raw** (literal ``<script>``/quote
+    markup; only URL-syntax-critical characters encoded) — real attackers send
+    literal markup, and a always-encoded corpus teaches the model to key on
+    percent-encoding instead of payload semantics (measured blind spot:
+    plain XSS scored ~0.05 vs ~0.99 encoded). The other half stays fully
+    percent-encoded like the classic corpora.
+    """
+    if rng.random() < 0.5:
+        return urllib.parse.quote(payload, safe="<>()'\";/:@!$*,-_.~[] ")
+    return urllib.parse.quote(payload, safe="")
+
+
 def _headers(host: str, rng: random.Random, content_type: str | None = None) -> list[tuple[str, str]]:
     h = [
         ("User-Agent", "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1)"),
@@ -195,15 +210,15 @@ def make_attack_records(count: int, seed: int) -> list[RequestRecord]:
         method, query, body, content_type = "GET", "", "", None
 
         if placement == "query_value":
-            query = f"{rng.choice(QUERY_PARAMS)}={urllib.parse.quote(payload, safe='')}"
+            query = f"{rng.choice(QUERY_PARAMS)}={_place(payload, rng)}"
         elif placement == "query_key":
-            query = f"{urllib.parse.quote(payload, safe='')}={rng.randint(1, 999)}"
+            query = f"{_place(payload, rng)}={rng.randint(1, 999)}"
         elif placement == "path":
-            path = f"{path}/{urllib.parse.quote(payload, safe='')}"
+            path = f"{path}/{_place(payload, rng)}"
         elif placement == "form_body":
             method = "POST"
             content_type = "application/x-www-form-urlencoded"
-            body = f"{rng.choice(FORM_FIELDS)}={urllib.parse.quote(payload, safe='')}"
+            body = f"{rng.choice(FORM_FIELDS)}={_place(payload, rng)}"
         elif placement == "json_body":
             method = "POST"
             content_type = "application/json"

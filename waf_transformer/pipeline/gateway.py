@@ -48,7 +48,7 @@ DEMO_PAGE = """<!doctype html>
  .allow{color:#3ddc84}.block{color:#ff5555}.challenge{color:#ffb020}
  a{color:#7fb4ff} small{color:#8a97a5}
 </style></head><body>
-<h1>waf_transformer — WAF decision engine <small>Phase 4 / Step 12</small></h1>
+<h1>waf_transformer — WAF decision engine <small>Phase 4 / Step 12 · <a href="/dashboard">dashboard</a></small></h1>
 <p>Paste a raw HTTP request below. The engine scores it and returns the
 enforcement decision from <code>config/scope.toml [enforcement]</code>
 (hot-reloaded; currently shadow-mode safe).</p>
@@ -82,11 +82,13 @@ async function stats(){ const r = await fetch('/stats'); document.getElementById
 class DecisionEngine:
     """Shared state for the HTTP handlers: detector + audit log + counters."""
 
-    def __init__(self, checkpoint: str, decisions_dir: Path, detector=None):
+    def __init__(self, checkpoint: str, decisions_dir: Path, detector=None,
+                 reports_dir: Path = Path("data/reports")):
         self.detector = detector or Detector(checkpoint)
         if hasattr(self.detector, "_ensure_loaded"):
             self.detector._ensure_loaded()
         self.decisions_dir = Path(decisions_dir)
+        self.reports_dir = Path(reports_dir)
         self.decisions_dir.mkdir(parents=True, exist_ok=True)
         self.lock = threading.Lock()
         self.counters = {"total": 0, "allow": 0, "challenge": 0, "block": 0,
@@ -178,6 +180,12 @@ def make_handler(engine: DecisionEngine):
         def do_GET(self):
             if self.path in ("/", "/index.html"):
                 self._send(200, DEMO_PAGE.encode(), "text/html; charset=utf-8")
+            elif self.path == "/dashboard":
+                self._send(200, self._dashboard_page().encode(), "text/html; charset=utf-8")
+            elif self.path == "/monitor.json":
+                p = engine.reports_dir / "monitor.json"
+                body = p.read_bytes() if p.exists() else b'{"error": "run: python3 -m waf_transformer.pipeline.monitor"}'
+                self._send(200 if p.exists() else 404, body)
             elif self.path == "/health":
                 st = engine.detector.policy.state
                 self._send(200, json.dumps({
@@ -191,6 +199,15 @@ def make_handler(engine: DecisionEngine):
                 self._send(200, json.dumps(engine.stats_json(), indent=2).encode())
             else:
                 self._send(404, b'{"error": "not found"}')
+
+        def _dashboard_page(self) -> str:
+            """Step 15 dashboard: live counters + the latest monitor.json."""
+            stats = engine.stats_json()
+            p = engine.reports_dir / "monitor.json"
+            mon = json.loads(p.read_text()) if p.exists() else {"alerts": [], "drift": [], "days": []}
+            return DASHBOARD_PAGE.replace("__STATS__", json.dumps(stats, indent=2)).replace(
+                "__MONITOR__", json.dumps(mon, indent=2)
+            )
 
         def do_POST(self):
             length = int(self.headers.get("Content-Length") or 0)
@@ -237,6 +254,21 @@ def make_handler(engine: DecisionEngine):
             self.wfile.write(payload)
 
     return Handler
+
+
+DASHBOARD_PAGE = """<!doctype html>
+<html><head><meta charset="utf-8"><title>waf_transformer — dashboard</title>
+<style>
+ body{font-family:ui-monospace,monospace;margin:2rem auto;max-width:980px;background:#0f1216;color:#d7dde4}
+ h1{font-size:1.2rem} h2{font-size:1rem;color:#8a97a5}
+ pre{background:#1a2027;padding:14px;border-radius:6px;overflow:auto}
+ a{color:#7fb4ff} small{color:#8a97a5}
+</style></head><body>
+<h1>waf_transformer — monitoring dashboard <small>Steps 15 &amp; 19 · <a href="/">demo</a></small></h1>
+<h2>Live engine stats</h2><pre>__STATS__</pre>
+<h2>Aggregated metrics &amp; drift (data/reports/monitor.json)</h2><pre>__MONITOR__</pre>
+<p><small>regenerate: <code>python3 -m waf_transformer.pipeline.monitor</code> (cron via scripts/run_nightly.sh)</small></p>
+</body></html>"""
 
 
 def main(argv: list[str] | None = None) -> int:
