@@ -10,7 +10,10 @@ from pathlib import Path
 
 from waf_transformer.pipeline.gateway import DecisionEngine, make_handler
 
-from .test_pipeline import FakeDetector
+try:  # package-style (discover -t .) or flat (discover -s tests) invocation
+    from .test_pipeline import FakeDetector, sample_request
+except ImportError:  # pragma: no cover
+    from test_pipeline import FakeDetector, sample_request
 
 RAW_ATTACK = (
     "GET /x?q=<script>alert(1)</script> HTTP/1.1\r\nHost: t\r\nConnection: close\r\n\r\n"
@@ -67,8 +70,6 @@ class TestGateway(unittest.TestCase):
         self.assertIsNone(json.loads(body).get("request"))
 
     def test_json_record_and_score_endpoint(self):
-        from .test_pipeline import sample_request
-
         rec = sample_request(7, attack=True)
         status, headers, body = self._call(
             "POST", "/score", json.dumps(rec), headers={"Content-Type": "application/json"}

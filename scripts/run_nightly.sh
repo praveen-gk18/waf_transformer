@@ -3,7 +3,7 @@
 #   10 2 * * *  cd /srv/waf_transformer && bash scripts/run_nightly.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
-PY=${PYTHON:-python3}
+PY=${PYTHON:-$(test -x .venv/bin/python && echo .venv/bin/python || echo python3)}
 DAY=${1:-$(date +%F)}
 
 echo "nightly batch for ${DAY}"

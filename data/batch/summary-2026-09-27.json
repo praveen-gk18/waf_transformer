@@ -1,35 +1,91 @@
 {
   "actions": {
-    "allow": 18
+    "allow": 60
   },
-  "flagged_count": 8,
+  "flagged_count": 29,
   "latency_ms": {
     "max": 1342.663,
-    "p50": 20.745,
-    "p95": 37.495,
-    "p99": 1342.663
+    "p50": 17.315,
+    "p95": 36.04,
+    "p99": 1193.222
   },
   "possible_probing": [],
-  "requests": 18,
+  "requests": 60,
   "score_histogram": {
-    "0.00-0.10": 3,
-    "0.10-0.20": 2,
-    "0.20-0.30": 3,
+    "0.00-0.10": 13,
+    "0.10-0.20": 6,
+    "0.20-0.30": 9,
+    "0.40-0.50": 1,
     "0.50-0.60": 2,
+    "0.60-0.70": 3,
     "0.70-0.80": 1,
-    "0.95-1.01": 7
+    "0.95-1.01": 25
   },
-  "score_mean": 0.5565,
+  "score_mean": 0.5497,
   "shadow_actions": {
-    "block": 7,
-    "challenge": 1
+    "block": 25,
+    "challenge": 4
   },
   "top_paths_by_score": [
     {
+      "max_score": 0.9953,
+      "mean_score": 0.9929,
+      "n": 6,
+      "path": "/catalog/item"
+    },
+    {
       "max_score": 0.997,
-      "mean_score": 0.915,
-      "n": 3,
+      "mean_score": 0.963,
+      "n": 8,
       "path": "/tienda1/publico/caracteristicas.jsp"
+    },
+    {
+      "max_score": 0.6725,
+      "mean_score": 0.4989,
+      "n": 5,
+      "path": "/"
+    },
+    {
+      "max_score": 0.5863,
+      "mean_score": 0.3372,
+      "n": 3,
+      "path": "/catalog/electronics"
+    },
+    {
+      "max_score": 0.57,
+      "mean_score": 0.33,
+      "n": 3,
+      "path": "/search"
+    },
+    {
+      "max_score": 0.2946,
+      "mean_score": 0.2349,
+      "n": 3,
+      "path": "/product/104"
+    },
+    {
+      "max_score": 0.2765,
+      "mean_score": 0.1996,
+      "n": 3,
+      "path": "/checkout"
+    },
+    {
+      "max_score": 0.1619,
+      "mean_score": 0.1087,
+      "n": 3,
+      "path": "/api/v1/cart"
+    },
+    {
+      "max_score": 0.1627,
+      "mean_score": 0.0795,
+      "n": 6,
+      "path": "/tienda1/autenticar"
+    },
+    {
+      "max_score": 0.0515,
+      "mean_score": 0.0399,
+      "n": 6,
+      "path": "/tienda1/imagenes/nuestratierra.jpg"
     }
   ]
 }

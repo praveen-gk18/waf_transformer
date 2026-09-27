@@ -14,7 +14,7 @@
 # writes to data/processed/ (regenerable), training to artifacts/run2/.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-PY_MODEL=${PYTHON:-python3}
+PY_MODEL=${PYTHON:-$(test -x .venv/bin/python && echo .venv/bin/python || echo python3)}
 CANDIDATES=${1:-data/batch/candidates.jsonl}
 QUEUE=data/review/queue_live.csv
 CORR=data/interim/corrections_live.jsonl

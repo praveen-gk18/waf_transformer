@@ -2,7 +2,7 @@
 # Step 10 demo end-to-end: publish traffic -> consume + detect + decide -> nightly batch.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-PY=${PYTHON:-python3}
+PY=${PYTHON:-$(test -x .venv/bin/python && echo .venv/bin/python || echo python3)}
 
 echo "== 1. publish a synthetic traffic burst to the broker =="
 $PY - <<'EOF'

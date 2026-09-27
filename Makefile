@@ -7,7 +7,7 @@ SEED := 20260927
 .PHONY: test data-fetch data-synth data-ingest data-label data-review-sample data-samples data-build data-report data-pipeline data-demo clean-data model-train model-evaluate model-export model-benchmark model-demo
 
 test:
-	$(PY) -m unittest discover -s tests -v
+	$(PY_MODEL) -m unittest discover -s tests -t . -v
 
 # ---- Phase 2 data pipeline (each step is independently runnable) ----
 data-fetch:
@@ -37,11 +37,11 @@ data-report:
 
 # Full Phase-2 run: public corpora + synthetic -> labeled, split, reported.
 data-pipeline:
-	sh scripts/run_data_pipeline.sh full
+	bash scripts/run_data_pipeline.sh full
 
 # Offline smoke run: synthetic sources only (no network).
 data-demo:
-	sh scripts/run_data_pipeline.sh demo
+	bash scripts/run_data_pipeline.sh demo
 
 clean-data:
 	rm -rf data/raw data/interim data/processed data/review
@@ -65,7 +65,7 @@ model-demo:
 # ---- Phase 4 streaming / batch / enforcement (Steps 10–12) ----
 # End-to-end: publish -> detect -> decide -> nightly batch.
 stream-demo:
-	sh scripts/demo_streaming.sh
+	bash scripts/demo_streaming.sh
 
 # Enforcement bridge (live): GET / demo page, POST /waf/decision, /health, /stats.
 gateway-serve:
@@ -79,7 +79,7 @@ monitor-run:
 	$(PY) -m waf_transformer.pipeline.monitor
 
 model-retrain:
-	sh scripts/run_retrain.sh
+	bash scripts/run_retrain.sh
 
 model-distill:
 	$(PY_MODEL) -m waf_transformer.modeling.distill --out artifacts/distill
